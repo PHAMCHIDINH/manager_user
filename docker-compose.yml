@@ -10,17 +10,20 @@ services:
     environment:
       APP_ENV: ${APP_ENV}
       PORT: ${PORT}
+      DATABASE_URL: postgres://${BLUEPRINT_DB_USERNAME}:${BLUEPRINT_DB_PASSWORD}@psql_bp:5432/${BLUEPRINT_DB_DATABASE}?sslmode=disable
       BLUEPRINT_DB_HOST: ${BLUEPRINT_DB_HOST}
       BLUEPRINT_DB_PORT: ${BLUEPRINT_DB_PORT}
       BLUEPRINT_DB_DATABASE: ${BLUEPRINT_DB_DATABASE}
       BLUEPRINT_DB_USERNAME: ${BLUEPRINT_DB_USERNAME}
       BLUEPRINT_DB_PASSWORD: ${BLUEPRINT_DB_PASSWORD}
       BLUEPRINT_DB_SCHEMA: ${BLUEPRINT_DB_SCHEMA}
+      TZ: Asia/Ho_Chi_Minh   # thiết lập timezone
     depends_on:
       psql_bp:
         condition: service_healthy
     networks:
       - blueprint
+
   frontend:
     build:
       context: .
@@ -31,8 +34,11 @@ services:
       - app
     ports:
       - 5173:5173
+    environment:
+      TZ: Asia/Ho_Chi_Minh   # thiết lập timezone
     networks:
       - blueprint
+
   psql_bp:
     image: postgres:latest
     restart: unless-stopped
@@ -40,6 +46,7 @@ services:
       POSTGRES_DB: ${BLUEPRINT_DB_DATABASE}
       POSTGRES_USER: ${BLUEPRINT_DB_USERNAME}
       POSTGRES_PASSWORD: ${BLUEPRINT_DB_PASSWORD}
+      TZ: Asia/Ho_Chi_Minh   # thiết lập timezone cho Postgres
     ports:
       - "${BLUEPRINT_DB_PORT}:5432"
     volumes:
@@ -55,5 +62,6 @@ services:
 
 volumes:
   psql_volume_bp:
+
 networks:
   blueprint:

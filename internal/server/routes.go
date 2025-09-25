@@ -1,7 +1,10 @@
 package server
 
 import (
+	"my_project/internal/middleware"
+	"my_project/internal/server/handlers"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -10,27 +13,25 @@ import (
 func (s *Server) RegisterRoutes() http.Handler {
 	r := gin.Default()
 
+	// CORS: cho phép frontend (React) gọi API
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"}, // Add your frontend URL
+		AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
-		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type"},
-		AllowCredentials: true, // Enable cookies/auth
+		AllowHeaders:     []string{"Origin", "Accept", "Authorization", "Content-Type", "X-Request-ID"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
 	}))
 
-	r.GET("/", s.HelloWorldHandler)
+	r.Use(middleware.RequestIDMiddleware())
+	r.Use(middleware.LoggingMiddleware())
+	r.Use(middleware.ErrorHandlerMiddleware())
 
-	r.GET("/health", s.healthHandler)
+	// Đăng ký API routes
+	api := r.Group("/api/v1")
+	{
+		handlers.RegisterAPIRoutes(api, s.UserController, s.AuthController, s.PostController)
+	}
 
 	return r
-}
-
-func (s *Server) HelloWorldHandler(c *gin.Context) {
-	resp := make(map[string]string)
-	resp["message"] = "Hello World"
-
-	c.JSON(http.StatusOK, resp)
-}
-
-func (s *Server) healthHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, s.db.Health())
 }
