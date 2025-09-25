@@ -107,7 +107,9 @@ const HomePage = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-800">{post.username}</p>
-                    <p className="text-xs text-gray-500">{new Date(post.created_at.Time).toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-500">
+                      {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}
+                    </p>
                   </div>
                 </div>
                 <span

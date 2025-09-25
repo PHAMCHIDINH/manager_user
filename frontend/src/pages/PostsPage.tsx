@@ -4,6 +4,8 @@ import type { Post, CreatePostRequest } from '../api/postApi';
 
 const PostsPage: React.FC = () => {
   // States
+  const [page, setPage] = useState(1);
+  const limit = 5;
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -29,11 +31,12 @@ const PostsPage: React.FC = () => {
   }), [posts]);
 
   // Fetch posts function với useCallback để tránh re-render
+  // 2) fetchPosts: dùng page & limit (5)
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await PostAPI.getPosts(1, 20);
+      const data = await PostAPI.getPosts(page, limit); // <-- page, 5
       setPosts(Array.isArray(data.posts) ? data.posts : []);
     } catch (err) {
       console.error('Failed to fetch posts:', err);
@@ -42,12 +45,13 @@ const PostsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]); // <-- re-fetch khi page đổi
+
 
   // Load posts on mount
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+  fetchPosts();
+}, [fetchPosts]);
 
   // Reset form function
   const resetForm = useCallback(() => {
@@ -257,6 +261,26 @@ const PostsPage: React.FC = () => {
           <span className="text-sm text-gray-500">🔄 Refreshing...</span>
         </div>
       )}
+            {/* Pagination Controls */}
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-sm text-gray-600">Page {page}</span>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1 || loading}
+            className="px-3 py-1 rounded-md border text-sm disabled:opacity-50"
+          >
+            ◀ Prev
+          </button>
+          <button
+            onClick={() => setPage(p => p + 1)}
+            disabled={loading || posts.length < limit}
+            className="px-3 py-1 rounded-md border text-sm disabled:opacity-50"
+          >
+            Next ▶
+          </button>
+        </div>
+      </div>
 
       <div className="grid gap-4">
         {posts.length > 0 ? (
@@ -343,7 +367,11 @@ const PostCard: React.FC<{
                 : '📁 Unknown'
             }
           </span>
-          <span>📅 {formatDate(post.created_at)}</span>
+          <span>
+            📅 {post.createdAt && typeof post.createdAt === 'object' && 'Time' in post.createdAt && 'Valid' in post.createdAt
+              ? formatDate(post.createdAt as { Time: string; Valid: boolean })
+              : 'Unknown date'}
+          </span>
         </div>
       </div>
     </div>
