@@ -84,40 +84,4 @@ make clean
 ```
 
 
-Cấu trúc
-my_project/
-├── cmd/                  
-│   └── api/              # Entry point (main.go)
-│
-├── internal/
-│   ├── app/              # Core application logic (Clean Architecture)
-│   │   ├── controller/   # HTTP handlers (user_controller.go, post_controller.go)
-│   │   ├── service/      # Business logic (user_service.go, post_service.go)
-│   │   ├── repository/   # Interface cho database (user_repo.go, post_repo.go)
-│   │   ├── model/        # Entities + DTOs (User, Post, LoginRequest, etc.)
-│   │   └── middleware/   # JWT, logging, recovery
-│   │
-│   ├── database/         # Database layer (infrastructure)
-│   │   ├── connection.go # Setup Postgres, pooling
-│   │   ├── migrations/   # Schema migrations
-│   │   ├── queries/      # SQL queries (cho SQLC)
-│   │   └── sqlc/         # Code sinh từ SQLC
-│   │
-│   └── server/           # HTTP server setup
-│       ├── server.go     # Gin engine, DI, module wiring
-│       ├── routes.go     # Định nghĩa routes + mapping controller
-│       └── routes_test.go
-│
-├── frontend/             # React frontend
-│
-├── configs/              # Config file (yaml/json/toml) nếu dùng
-│
-├── scripts/              # Script devops (seed DB, testcontainers, tools)
-│
-├── docker-compose.yml    
-├── Dockerfile            
-├── go.mod & go.sum       
-├── Makefile              
-├── sqlc.yaml             
-├── .env                  
-└── README.md             
+ 
