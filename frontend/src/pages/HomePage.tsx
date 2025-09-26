@@ -5,7 +5,7 @@ import type { Post, PostsListResponse } from '../api/postApi';
 import UserAPI from '../api/userApi';
 import type { User } from '../api/userApi';
 
-const POSTS_PER_PAGE = 5;
+const POSTS_PER_PAGE = 6;
 
 const statusBadgeClass = (status?: string) => {
   switch (status) {

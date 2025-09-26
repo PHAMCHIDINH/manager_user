@@ -1,4 +1,4 @@
-﻿import apiClient from './axiosClient';
+import apiClient from './axiosClient';
 
 export interface Post {
   id: number;
@@ -13,8 +13,8 @@ export interface Post {
 
 export interface PostsListResponse {
   posts: Post[];
-  totalCount?: number; // náº¿u BE chÆ°a tráº£, Ä‘á»ƒ optional
-  total?: number;      // táº¡m giá»¯ Ä‘á»ƒ trĂ¡nh crash khi code chá»— khĂ¡c cĂ²n dĂ¹ng total
+  totalCount?: number; // nếu BE chưa trả, để optional
+  total?: number;      // tạm giữ để tránh crash khi code chỗ khác còn dùng total
   page?: number;
   limit?: number;
 }
@@ -43,6 +43,11 @@ class PostAPI {
     return response.data;
   }
 
+  async getPostsByUser(userId: number, page = 1, limit = 10): Promise<PostsListResponse> {
+    const response = await apiClient.get<PostsListResponse>(`/posts/user/${userId}?page=${page}&limit=${limit}`);
+    return response.data;
+  }
+
   async getPostById(id: number): Promise<Post> {
     const res = await apiClient.get<ApiResponse<Post>>(`/posts/${id}`);
     return res.data.data;
@@ -64,3 +69,4 @@ class PostAPI {
 }
 
 export default new PostAPI();
+

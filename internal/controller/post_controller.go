@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -114,10 +115,20 @@ func (pc *PostController) CreatePostHandler(c *gin.Context) {
 		return
 	}
 
-	// Temporary: use user_id = 1 (seed user already in the database)
-	// TODO: In production, pull user_id from the JWT token
+	userIDVal, ok := c.Get("userID")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	userID, err := castToInt32(userIDVal)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user context"})
+		return
+	}
+
 	createParams := sqlc.CreatePostParams{
-		UserID:  1, // Seed user available in the database
+		UserID:  userID,
 		Title:   req.Title,
 		Content: req.Content,
 	}
@@ -168,4 +179,29 @@ func (pc *PostController) DeletePostHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "post deleted"})
+}
+
+func castToInt32(value interface{}) (int32, error) {
+	switch v := value.(type) {
+	case int32:
+		return v, nil
+	case int64:
+		return int32(v), nil
+	case int:
+		return int32(v), nil
+	case float64:
+		return int32(v), nil
+	case uint32:
+		return int32(v), nil
+	case uint64:
+		return int32(v), nil
+	case string:
+		parsed, err := strconv.ParseInt(v, 10, 32)
+		if err != nil {
+			return 0, err
+		}
+		return int32(parsed), nil
+	default:
+		return 0, fmt.Errorf("unsupported userID type %T", value)
+	}
 }

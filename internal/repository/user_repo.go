@@ -16,6 +16,7 @@ type UserRepository interface {
 type userRepo struct {
 	q *sqlc.Queries
 }
+
 func NewUserRepository(q *sqlc.Queries) UserRepository {
 	return &userRepo{q}
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import PostAPI from '../api/postApi';
 import type { CreatePostRequest, Post } from '../api/postApi';
@@ -97,6 +97,17 @@ const PostsPage: React.FC = () => {
     resetForm();
     setShowForm(true);
   }, [resetForm]);
+
+  const handleEdit = useCallback((post: Post) => {
+    setEditingPost(post);
+    setFormData({
+      title: post.title ?? '',
+      content: post.content ?? '',
+      status: post.status === 'draft' || post.status === 'published' ? post.status : 'published',
+    });
+    setShowForm(true);
+    setError(null);
+  }, []);
 
   const handleDelete = useCallback(async (id: number) => {
     if (!confirm('Delete this post?')) return;
@@ -340,3 +351,4 @@ const PostCard: React.FC<{
 PostCard.displayName = 'PostCard';
 
 export default PostsPage;
+
