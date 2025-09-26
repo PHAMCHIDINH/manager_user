@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -20,7 +21,7 @@ func NewPostController(s service.PostService) *PostController {
 
 // GET /api/v1/posts?page=1&limit=10
 func (pc *PostController) ListPostsHandler(c *gin.Context) {
-	limit := int32(10)
+	limit := int32(5)
 	offset := int32(0)
 
 	if l := c.Query("limit"); l != "" {
@@ -40,9 +41,45 @@ func (pc *PostController) ListPostsHandler(c *gin.Context) {
 		return
 	}
 
-	// Đảm bảo luôn trả về array thay vì null
+	// Ensure the response is always an array instead of null
 	if posts == nil {
 		posts = []sqlc.ListPostsRow{}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"posts": posts})
+}
+
+// GET /api/v1/posts/user/:userID?page=1&limit=10
+func (pc *PostController) ListPostsByUserHandler(c *gin.Context) {
+	userIDStr := c.Param("userID")
+	userID, err := strconv.ParseInt(userIDStr, 10, 32)
+	if err != nil || userID <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+
+	limit := int32(5)
+	offset := int32(0)
+
+	if l := c.Query("limit"); l != "" {
+		if v, err := strconv.Atoi(l); err == nil {
+			limit = int32(v)
+		}
+	}
+	if p := c.Query("page"); p != "" {
+		if v, err := strconv.Atoi(p); err == nil && v > 0 {
+			offset = int32((v - 1) * int(limit))
+		}
+	}
+
+	posts, err := pc.service.ListPostsByUser(c.Request.Context(), int32(userID), limit, offset)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user posts"})
+		return
+	}
+
+	if posts == nil {
+		posts = []sqlc.ListPostsByUserRow{}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"posts": posts})
@@ -78,10 +115,20 @@ func (pc *PostController) CreatePostHandler(c *gin.Context) {
 		return
 	}
 
-	// Tạm thời sử dụng user_id = 1 (user đã có trong database)
-	// TODO: Trong production, lấy user_id từ JWT token
+	userIDVal, ok := c.Get("userID")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	userID, err := castToInt32(userIDVal)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user context"})
+		return
+	}
+
 	createParams := sqlc.CreatePostParams{
-		UserID:  1, // User ID có sẵn trong database
+		UserID:  userID,
 		Title:   req.Title,
 		Content: req.Content,
 	}
@@ -97,7 +144,7 @@ func (pc *PostController) CreatePostHandler(c *gin.Context) {
 // PUT /api/v1/posts/:id
 func (pc *PostController) UpdatePostHandler(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	id, err := strconv.ParseInt(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid post id"})
 		return
@@ -132,4 +179,29 @@ func (pc *PostController) DeletePostHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "post deleted"})
+}
+
+func castToInt32(value interface{}) (int32, error) {
+	switch v := value.(type) {
+	case int32:
+		return v, nil
+	case int64:
+		return int32(v), nil
+	case int:
+		return int32(v), nil
+	case float64:
+		return int32(v), nil
+	case uint32:
+		return int32(v), nil
+	case uint64:
+		return int32(v), nil
+	case string:
+		parsed, err := strconv.ParseInt(v, 10, 32)
+		if err != nil {
+			return 0, err
+		}
+		return int32(parsed), nil
+	default:
+		return 0, fmt.Errorf("unsupported userID type %T", value)
+	}
 }

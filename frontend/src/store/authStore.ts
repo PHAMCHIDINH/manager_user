@@ -13,6 +13,20 @@ interface AuthState {
   initializeAuth: () => void;
 }
 
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (typeof error === 'object' && error !== null) {
+    const maybeResponse = error as { response?: { data?: { error?: string } }; message?: unknown };
+    const apiMessage = maybeResponse.response?.data?.error;
+    if (typeof apiMessage === 'string' && apiMessage.trim()) {
+      return apiMessage;
+    }
+    if (typeof maybeResponse.message === 'string' && maybeResponse.message.trim()) {
+      return maybeResponse.message;
+    }
+  }
+  return fallback;
+};
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: AuthAPI.getCurrentUser(),
   token: AuthAPI.getToken(),
@@ -24,8 +38,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ loading: true, error: null });
       const res = await AuthAPI.login({ email, password });
       set({ user: res.user, token: res.token, loading: false });
-    } catch (err: any) {
-      const message = err.response?.data?.error || err.message || 'Login failed';
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Login failed');
       set({ error: message, loading: false });
     }
   },
@@ -35,8 +49,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ loading: true, error: null });
       const res = await AuthAPI.register({ username, email, password, confirmPassword });
       set({ user: res.user, token: res.token, loading: false });
-    } catch (err: any) {
-      const message = err.response?.data?.error || err.message || 'Register failed';
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Register failed');
       set({ error: message, loading: false });
     }
   },
@@ -47,13 +61,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   initializeAuth: () => {
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('authToken');
+    const storedUser = AuthAPI.getCurrentUser();
+    const storedToken = AuthAPI.getToken();
     if (storedUser && storedToken) {
-      set({
-        user: JSON.parse(storedUser),
-        token: storedToken,
-      });
+      set({ user: storedUser, token: storedToken });
     }
   },
 }));

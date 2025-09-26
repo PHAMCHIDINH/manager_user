@@ -133,6 +133,62 @@ func (q *Queries) ListPosts(ctx context.Context, arg ListPostsParams) ([]ListPos
 	return items, nil
 }
 
+const listPostsByUser = `-- name: ListPostsByUser :many
+SELECT p.id, p.user_id, p.title, p.content, p.created_at, p.updated_at, u.username
+FROM posts p
+JOIN users u ON p.user_id = u.id
+WHERE p.user_id = $1
+ORDER BY p.created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type ListPostsByUserParams struct {
+	UserID int32 `json:"user_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+type ListPostsByUserRow struct {
+	ID        int32        `json:"id"`
+	UserID    int32        `json:"user_id"`
+	Title     string       `json:"title"`
+	Content   string       `json:"content"`
+	CreatedAt sql.NullTime `json:"created_at"`
+	UpdatedAt sql.NullTime `json:"updated_at"`
+	Username  string       `json:"username"`
+}
+
+func (q *Queries) ListPostsByUser(ctx context.Context, arg ListPostsByUserParams) ([]ListPostsByUserRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPostsByUser, arg.UserID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPostsByUserRow
+	for rows.Next() {
+		var i ListPostsByUserRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Title,
+			&i.Content,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updatePost = `-- name: UpdatePost :one
 UPDATE posts
 SET title = $2, content = $3, updated_at = now()

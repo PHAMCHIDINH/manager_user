@@ -25,6 +25,8 @@ export interface AuthResponse {
   expires_in: number;
 }
 
+export type AuthUser = AuthResponse['user'];
+
 export interface ApiResponse<T> {
   message: string;
   data: T;
@@ -115,9 +117,17 @@ class AuthAPI {
   }
 
   // Lấy thông tin user hiện tại
-  getCurrentUser(): any | null {
+  getCurrentUser(): AuthUser | null {
     const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
+    if (!userStr) {
+      return null;
+    }
+    try {
+      return JSON.parse(userStr) as AuthUser;
+    } catch (parseError) {
+      console.error('Failed to parse stored user', parseError);
+      return null;
+    }
   }
 
   // Lấy token hiện tại

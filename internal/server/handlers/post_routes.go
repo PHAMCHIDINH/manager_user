@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"my_project/internal/controller"
+	"my_project/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,11 +17,13 @@ func NewPostRoutes(pc *controller.PostController) *PostRoutes {
 
 func (pr *PostRoutes) RegisterRoutes(api *gin.RouterGroup) {
 	posts := api.Group("/posts")
-	{
-		posts.GET("", pr.postController.ListPostsHandler)
-		posts.GET("/:id", pr.postController.GetPostHandler)
-		posts.POST("", pr.postController.CreatePostHandler)
-		posts.PUT("/:id", pr.postController.UpdatePostHandler)
-		posts.DELETE("/:id", pr.postController.DeletePostHandler)
-	}
+	posts.GET("", pr.postController.ListPostsHandler)
+	posts.GET("/user/:userID", pr.postController.ListPostsByUserHandler)
+	posts.GET("/:id", pr.postController.GetPostHandler)
+
+	protected := posts.Group("")
+	protected.Use(middleware.AuthMiddleware())
+	protected.POST("", pr.postController.CreatePostHandler)
+	protected.PUT("/:id", pr.postController.UpdatePostHandler)
+	protected.DELETE("/:id", pr.postController.DeletePostHandler)
 }

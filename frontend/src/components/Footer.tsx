@@ -1,7 +1,8 @@
-const Footer = () => {
+﻿const Footer = () => {
+  const year = new Date().getFullYear();
   return (
-    <footer className="bg-gray-100 text-center p-4 mt-10 text-gray-600 text-sm">
-      © {new Date().getFullYear()} My Project. All rights reserved.
+    <footer className="border-t border-slate-200 bg-white/90 py-6 text-center text-sm text-slate-500">
+      <p className="mx-auto max-w-4xl">&copy; {year} My Project. All rights reserved.</p>
     </footer>
   );
 };

@@ -1,10 +1,9 @@
-import { useAuthStore } from "../store/authStore";
-import { useNavigate } from "react-router-dom";
+﻿import { useAuthStore } from "../store/authStore";
+import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
-// Định nghĩa schema validate với Yup
 const schema = yup.object({
   email: yup.string().email("Email không hợp lệ").required("Vui lòng nhập email"),
   password: yup.string().min(6, "Mật khẩu tối thiểu 6 ký tự").required("Vui lòng nhập mật khẩu"),
@@ -19,7 +18,6 @@ export default function LoginPage() {
   const { login, loading, error } = useAuthStore();
   const navigate = useNavigate();
 
-  // Sử dụng React Hook Form với Yup
   const {
     register,
     handleSubmit,
@@ -28,99 +26,91 @@ export default function LoginPage() {
     resolver: yupResolver(schema),
   });
 
-  // Xử lý submit form
   const onSubmit = async (data: LoginFormInputs) => {
     await login(data.email, data.password);
     if (!error) navigate("/dashboard");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4">
-            <span className="text-2xl">🔑</span>
-          </div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-2">Chào mừng trở lại!</h2>
-          <p className="text-gray-600">Đăng nhập vào tài khoản của bạn</p>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-900 px-4 py-16">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.2),_transparent_60%)]" aria-hidden />
+      <div className="relative mx-auto flex max-w-5xl flex-col items-center justify-center gap-12 lg:flex-row lg:gap-16">
+        <div className="max-w-lg text-center text-white lg:text-left">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            Secure Access
+          </span>
+          <h1 className="mt-6 text-4xl font-semibold leading-tight">Đăng nhập để tiếp tục trải nghiệm MyApp</h1>
+          <p className="mt-4 text-base text-slate-200/90">
+            Quản lý bài viết, kết nối với cộng đồng và khám phá những cập nhật mới nhất trong một không gian làm việc thanh lịch.
+          </p>
         </div>
 
-        {/* Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/80 p-8 shadow-2xl backdrop-blur">
+          <h2 className="text-center text-2xl font-semibold text-slate-900">Chào mừng trở lại</h2>
+          <p className="mt-2 text-center text-sm text-slate-600">Nhập thông tin đăng nhập của bạn để tiếp tục</p>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5" noValidate>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                📧 Email Address
-              </label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">Email</label>
               <input
                 type="email"
                 {...register("email")}
-                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 transition-all duration-200 outline-none ${
-                  errors.email ? "border-red-400" : "border-gray-300"
+                className={`w-full rounded-lg border px-4 py-3 text-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500/70 disabled:bg-slate-100 ${
+                  errors.email ? 'border-rose-400' : 'border-slate-300'
                 }`}
-                placeholder="Nhập email của bạn"
+                placeholder="name@example.com"
                 disabled={loading}
               />
               {errors.email && (
-                <p className="text-red-600 text-xs mt-1">{errors.email.message}</p>
+                <p className="mt-1 text-xs text-rose-600">{errors.email.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                🔐 Password
-              </label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">Password</label>
               <input
                 type="password"
                 {...register("password")}
-                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 transition-all duration-200 outline-none ${
-                  errors.password ? "border-red-400" : "border-gray-300"
+                className={`w-full rounded-lg border px-4 py-3 text-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500/70 disabled:bg-slate-100 ${
+                  errors.password ? 'border-rose-400' : 'border-slate-300'
                 }`}
-                placeholder="Nhập mật khẩu"
+                placeholder="••••••••"
                 disabled={loading}
               />
               {errors.password && (
-                <p className="text-red-600 text-xs mt-1">{errors.password.message}</p>
+                <p className="mt-1 text-xs text-rose-600">{errors.password.message}</p>
               )}
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <p className="text-red-600 text-sm flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {error}
-                </p>
+              <div className="rounded-2xl border border-rose-200/70 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {error}
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              className="w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <span className="flex items-center justify-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   Đang đăng nhập...
-                </div>
+                </span>
               ) : (
-                "Đăng nhập"
+                'Đăng nhập'
               )}
             </button>
           </form>
 
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Chưa có tài khoản?{" "}
-              <a href="/register" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
-                Đăng ký ngay
-              </a>
-            </p>
-          </div>
+          <p className="mt-6 text-center text-sm text-slate-600">
+            Chưa có tài khoản?
+            <Link to="/register" className="ml-1 font-medium text-indigo-600 transition hover:text-indigo-500">
+              Đăng ký ngay
+            </Link>
+          </p>
         </div>
       </div>
     </div>

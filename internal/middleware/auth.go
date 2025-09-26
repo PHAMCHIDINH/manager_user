@@ -2,29 +2,22 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
-	"os"
+	"strconv"
 	"strings"
 	"time"
 
+	"my_project/utils"
+
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/time/rate"
 )
 
-// ✅ Lấy JWT secret từ ENV, fallback = "secret"
-var jwtKey = []byte(getEnv("JWT_SECRET", "secret"))
-
-func getEnv(key, fallback string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return fallback
-}
-
-// AuthMiddleware: kiểm tra JWT
+// AuthMiddleware verifies JWT and stores user context
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.GetHeader("Authorization")
@@ -34,22 +27,51 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenStr := strings.TrimPrefix(auth, "Bearer ")
-		token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
-		})
-
-		if err != nil || !token.Valid {
+		claims, err := utils.ParseToken(tokenStr)
+		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired token"})
 			return
 		}
 
-		// Có thể lưu claims vào context
-		c.Set("user", token.Claims)
+		userID, err := extractUserID(claims)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token payload"})
+			return
+		}
+
+		c.Set("userID", userID)
+		c.Set("user", claims)
 		c.Next()
 	}
 }
 
-// TimeoutMiddleware: hủy request nếu quá hạn
+func extractUserID(claims jwt.MapClaims) (int32, error) {
+	raw, ok := claims["sub"]
+	if !ok {
+		return 0, fmt.Errorf("missing subject claim")
+	}
+
+	switch v := raw.(type) {
+	case float64:
+		return int32(v), nil
+	case int:
+		return int32(v), nil
+	case int32:
+		return v, nil
+	case int64:
+		return int32(v), nil
+	case string:
+		parsed, err := strconv.ParseInt(v, 10, 32)
+		if err != nil {
+			return 0, err
+		}
+		return int32(parsed), nil
+	default:
+		return 0, fmt.Errorf("unsupported subject type %T", v)
+	}
+}
+
+// TimeoutMiddleware: há»§y request náº¿u quĂ¡ háº¡n
 func TimeoutMiddleware(duration time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(c.Request.Context(), duration)
@@ -71,7 +93,7 @@ func TimeoutMiddleware(duration time.Duration) gin.HandlerFunc {
 	}
 }
 
-// RequestIDMiddleware: gắn ID duy nhất cho mỗi request
+// RequestIDMiddleware: gáº¯n ID duy nháº¥t cho má»—i request
 func RequestIDMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestID := uuid.NewString()
@@ -98,7 +120,7 @@ func LoggingMiddleware() gin.HandlerFunc {
 	}
 }
 
-// SecurityHeadersMiddleware: thêm header bảo mật
+// SecurityHeadersMiddleware: thĂªm header báº£o máº­t
 func SecurityHeadersMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("X-Frame-Options", "DENY")
@@ -108,7 +130,7 @@ func SecurityHeadersMiddleware() gin.HandlerFunc {
 	}
 }
 
-// RateLimitMiddleware: giới hạn số request
+// RateLimitMiddleware: giá»›i háº¡n sá»‘ request
 func RateLimitMiddleware(rps int, per time.Duration) gin.HandlerFunc {
 	limiter := rate.NewLimiter(rate.Every(per/time.Duration(rps)), rps)
 
@@ -121,7 +143,7 @@ func RateLimitMiddleware(rps int, per time.Duration) gin.HandlerFunc {
 	}
 }
 
-// ErrorHandlerMiddleware: bắt lỗi chung
+// ErrorHandlerMiddleware: báº¯t lá»—i chung
 func ErrorHandlerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
@@ -136,7 +158,7 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 	}
 }
 
-// ValidationMiddleware: ví dụ validate body rỗng
+// ValidationMiddleware: vĂ­ dá»¥ validate body rá»—ng
 func ValidationMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.ContentLength == 0 {
