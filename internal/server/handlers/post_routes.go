@@ -18,6 +18,7 @@ func (pr *PostRoutes) RegisterRoutes(api *gin.RouterGroup) {
 	posts := api.Group("/posts")
 	{
 		posts.GET("", pr.postController.ListPostsHandler)
+		posts.GET("/user/:userID", pr.postController.ListPostsByUserHandler)
 		posts.GET("/:id", pr.postController.GetPostHandler)
 		posts.POST("", pr.postController.CreatePostHandler)
 		posts.PUT("/:id", pr.postController.UpdatePostHandler)

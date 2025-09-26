@@ -1,12 +1,24 @@
 package utils
 
 import (
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtKey = []byte("super-secret-key") // TODO: đưa vào config
+var jwtKey = []byte(getJWTSecret())
+
+func getJWTSecret() string {
+	if secret := os.Getenv("JWT_SECRET"); secret != "" {
+		return secret
+	}
+	return "secret"
+}
+
+func JWTSigningKey() []byte {
+	return jwtKey
+}
 
 // CreateToken sinh JWT
 func CreateToken(userID int32, email string) (string, error) {

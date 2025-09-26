@@ -1,4 +1,4 @@
-import apiClient from './axiosClient';
+﻿import apiClient from './axiosClient';
 
 export interface Post {
   id: number;
@@ -13,8 +13,8 @@ export interface Post {
 
 export interface PostsListResponse {
   posts: Post[];
-  totalCount?: number; // nếu BE chưa trả, để optional
-  total?: number;      // tạm giữ để tránh crash khi code chỗ khác còn dùng total
+  totalCount?: number; // náº¿u BE chÆ°a tráº£, Ä‘á»ƒ optional
+  total?: number;      // táº¡m giá»¯ Ä‘á»ƒ trĂ¡nh crash khi code chá»— khĂ¡c cĂ²n dĂ¹ng total
   page?: number;
   limit?: number;
 }

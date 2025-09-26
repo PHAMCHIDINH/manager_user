@@ -1,128 +1,117 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useAuthStore } from "../store/authStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { register, loading, error } = useAuthStore();
+  const { register: registerUser, loading, error } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await register(username, email, password, confirmPassword);
+    await registerUser(username, email, password, confirmPassword);
     if (!error) navigate("/dashboard");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center mb-4">
-            <span className="text-2xl">📝</span>
-          </div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-2">Tạo tài khoản mới</h2>
-          <p className="text-gray-600">Tham gia cộng đồng của chúng tôi</p>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-900 px-4 py-16">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),_transparent_60%)]" aria-hidden />
+      <div className="relative mx-auto flex max-w-5xl flex-col items-center justify-center gap-12 lg:flex-row-reverse lg:gap-16">
+        <div className="max-w-lg text-center text-white lg:text-left">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide">
+            <span className="h-2 w-2 rounded-full bg-sky-400" />
+            Join the community
+          </span>
+          <h1 className="mt-6 text-4xl font-semibold leading-tight">Tạo tài khoản và bắt đầu hành trình của bạn</h1>
+          <p className="mt-4 text-base text-slate-200/90">
+            Chỉ vài bước đơn giản để bạn có thể quản lý nội dung, chia sẻ bài viết và kết nối với những thành viên khác trên MyApp.
+          </p>
         </div>
 
-        {/* Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/80 p-8 shadow-2xl backdrop-blur">
+          <h2 className="text-center text-2xl font-semibold text-slate-900">Tạo tài khoản</h2>
+          <p className="mt-2 text-center text-sm text-slate-600">Nhập thông tin của bạn để chúng tôi biết về bạn</p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                👤 Username
-              </label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">Username</label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 outline-none"
-                placeholder="Chọn một username"
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500/70"
+                placeholder="Tên hiển thị"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                📧 Email Address
-              </label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 outline-none"
-                placeholder="Nhập email của bạn"
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500/70"
+                placeholder="name@example.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                🔐 Password
-              </label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 outline-none"
-                placeholder="Tạo mật khẩu"
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500/70"
+                placeholder="••••••••"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                🔒 Confirm Password
-              </label>
+              <label className="mb-2 block text-sm font-medium text-slate-700">Confirm Password</label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 outline-none"
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500/70"
                 placeholder="Nhập lại mật khẩu"
               />
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <p className="text-red-600 text-sm flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {error}
-                </p>
+              <div className="rounded-2xl border border-rose-200/70 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {error}
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              className="w-full rounded-xl bg-sky-500 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <span className="flex items-center justify-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   Đang tạo tài khoản...
-                </div>
+                </span>
               ) : (
-                "Tạo tài khoản"
+                'Tạo tài khoản'
               )}
             </button>
           </form>
 
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Đã có tài khoản?{" "}
-              <a href="/login" className="text-green-600 hover:text-green-700 font-medium hover:underline">
-                Đăng nhập ngay
-              </a>
-            </p>
-          </div>
+          <p className="mt-6 text-center text-sm text-slate-600">
+            Đã có tài khoản?
+            <Link to="/login" className="ml-1 font-medium text-sky-600 transition hover:text-sky-500">
+              Đăng nhập ngay
+            </Link>
+          </p>
         </div>
       </div>
     </div>

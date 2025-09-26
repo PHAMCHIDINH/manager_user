@@ -2,15 +2,17 @@ package service
 
 import (
 	"context"
+
 	"my_project/internal/database/sqlc"
 	"my_project/internal/repository"
 )
 
-// PostService định nghĩa các nghiệp vụ cho posts
+// PostService defines the business logic for posts
 type PostService interface {
 	CreatePost(ctx context.Context, arg sqlc.CreatePostParams) (sqlc.CreatePostRow, error)
 	GetPost(ctx context.Context, id int32) (sqlc.Post, error)
 	ListPosts(ctx context.Context, limit, offset int32) ([]sqlc.ListPostsRow, error)
+	ListPostsByUser(ctx context.Context, userID int32, limit, offset int32) ([]sqlc.ListPostsByUserRow, error)
 	UpdatePost(ctx context.Context, arg sqlc.UpdatePostParams) (sqlc.Post, error)
 	DeletePost(ctx context.Context, id int32) error
 }
@@ -19,7 +21,7 @@ type postService struct {
 	postRepo repository.PostRepository
 }
 
-// NewPostService khởi tạo PostService
+// NewPostService creates a new PostService instance
 func NewPostService(repo repository.PostRepository) PostService {
 	return &postService{postRepo: repo}
 }
@@ -34,6 +36,10 @@ func (s *postService) GetPost(ctx context.Context, id int32) (sqlc.Post, error) 
 
 func (s *postService) ListPosts(ctx context.Context, limit, offset int32) ([]sqlc.ListPostsRow, error) {
 	return s.postRepo.List(ctx, limit, offset)
+}
+
+func (s *postService) ListPostsByUser(ctx context.Context, userID int32, limit, offset int32) ([]sqlc.ListPostsByUserRow, error) {
+	return s.postRepo.ListByUser(ctx, userID, limit, offset)
 }
 
 func (s *postService) UpdatePost(ctx context.Context, arg sqlc.UpdatePostParams) (sqlc.Post, error) {

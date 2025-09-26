@@ -4,25 +4,18 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
+	"my_project/utils"
+
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/time/rate"
 )
 
-// ✅ Lấy JWT secret từ ENV, fallback = "secret"
-var jwtKey = []byte(getEnv("JWT_SECRET", "secret"))
-
-func getEnv(key, fallback string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return fallback
-}
+var jwtKey = utils.JWTSigningKey()
 
 // AuthMiddleware: kiểm tra JWT
 func AuthMiddleware() gin.HandlerFunc {
