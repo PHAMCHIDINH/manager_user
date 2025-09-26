@@ -1,87 +1,117 @@
-# Project my_project
+# Project manager_user
 
-One Paragraph of project description goes here
+Ứng dụng full‑stack quản lý người dùng và bài viết.
+
+- Backend: Go (Clean Architecture), Gin HTTP, middleware stack, SQLC repository, PostgreSQL + Goose migration, xác thực bằng bcrypt/JWT.
+- Frontend: React 19 + Vite, Tailwind CSS, React Router, Zustand, Axios, form với react-hook-form + Yup.
+- DevOps: Docker, docker-compose, Makefile, cấu hình `.env`.
+
+## Backend Features
+
+- Database layer: `database.New` nạp config, mở kết nối PostgreSQL, chạy Goose migrations, và trả về singleton SQLC query layer cho các service sử dụng.
+- UserService: Register / Login / GetUser / ListUsers / DeleteUser
+  - Hash mật khẩu bằng bcrypt, kiểm tra email duy nhất, sinh JWT token khi đăng nhập.
+- PostService: CRUD bài viết, hỗ trợ lọc theo user, bọc quanh repository do SQLC sinh.
+- AuthController: REST API cho RegisterHandler, LoginHandler
+  - Hỗ trợ đăng ký kèm auto-login, đăng nhập bằng email + password.
+- UserController: API quản trị (tạo user, liệt kê, lấy chi tiết theo ID, xoá user).
+- PostController: phân trang, lọc theo user, lấy chi tiết 1 post; tạo/sửa/xoá post có bảo vệ JWT (cần đăng nhập).
+- Middleware stack: inject request ID, logging traffic, enforce JWT, security headers, rate limiting, panic/timeout recovery.
+- Gin server wiring: đăng ký routes, middleware, CORS, graceful shutdown; controllers được inject qua dependency injection.
+
+## Frontend Features
+
+- Axios client: tự động gắn JWT token + request ID, xử lý 401 (redirect về trang đăng nhập).
+- Auth API + Zustand store: login, register, logout, refresh token; đồng bộ state với localStorage.
+- Routing: tách public routes (home/login/register) và protected routes (dashboard/posts/users); `ProtectedRoute` bảo vệ các route yêu cầu auth.
+- HomePage: hiển thị danh sách user, danh sách post có phân trang; quản lý loading/error state.
+- PostsPage: CRUD post, lọc theo user, form dạng modal, pagination.
+- UsersPage: bảng quản lý user (role, ngày join, liên kết đến posts theo user).
+- DashboardPage: hiển thị thông tin profile user đang đăng nhập (Tailwind panels).
+- Shared Layouts & Components: `PublicLayout`, `DashboardLayout`, `Navbar`, `Footer`; UI responsive và thống nhất.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+Yêu cầu: Docker, docker-compose, Make, Go và Node.js (tuỳ môi trường phát triển).
 
-## MakeFile
+Clone dự án và thiết lập biến môi trường trong file `.env` (nếu có).
 
-Run build make command with tests
+## Makefile Commands
+
+- Build + test tất cả:
 ```bash
 make all
 ```
 
-Build the application
+- Build ứng dụng:
 ```bash
 make build
 ```
 
-Run the application
+- Chạy ứng dụng:
 ```bash
 make run
 ```
-Create DB container
+
+- Khởi tạo container DB:
 ```bash
 make docker-run
 ```
 
-Shutdown DB Container
+- Tắt container DB:
 ```bash
 make docker-down
 ```
 
 ## Database Operations
 
-**⚠️ Important: Run `make docker-run` first to start the database container**
+Lưu ý: Chạy `make docker-run` trước để khởi động database container.
 
-**📝 Note: Migrations run automatically when the app starts in Docker. Manual migration commands are for development outside Docker.**
+- Migrations trong Docker sẽ chạy tự động khi ứng dụng khởi động. Các lệnh dưới đây dùng cho môi trường phát triển ngoài Docker.
 
-Run database migrations (up)
+- Chạy migrations (up):
 ```bash
 make migrate-up
 ```
 
-Rollback database migrations (down)
+- Rollback migrations (down):
 ```bash
 make migrate-down
 ```
 
-Check migration status
+- Kiểm tra trạng thái migrations:
 ```bash
 make migrate-status
 ```
 
-Generate SQLC code from SQL queries
+- Sinh mã SQLC từ các truy vấn SQL:
 ```bash
 make sqlc-generate
 ```
 
-Create new migration file
+- Tạo migration mới:
 ```bash
 goose -dir internal/database/migrations create migration_name sql
 ```
 
-DB Integrations Test:
+- Chạy integration test cho DB:
 ```bash
 make itest
 ```
 
-Live reload the application:
+## Development
+
+- Live reload ứng dụng:
 ```bash
 make watch
 ```
 
-Run the test suite:
+- Chạy test suite:
 ```bash
 make test
 ```
 
-Clean up binary from the last build:
+- Dọn dẹp binary build lần trước:
 ```bash
 make clean
 ```
-
-
- 
